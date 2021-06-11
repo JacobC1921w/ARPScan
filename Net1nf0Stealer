@@ -1,41 +1,41 @@
 #!/bin/bash
 
-echo -n "Flushing arp table..."
+echo -n "Flush1ng arp table..."
 sudo ip -s -s neigh flush all 2&>1 &> /dev/null
-echo " done!"
+echo " d0ne!"
 
-echo -n "Getting device default interface..."
+echo -n "0bta1n1ng dev1ce default 1nterface..."
 myInterface=$(ip route | grep default | awk '{print $5}')
 echo " ${myInterface}!"
 
-echo -n "Getting device HWAddress..."
+echo -n "0bta1n1ng device HWAddress..."
 myHWAddress=$(ip addr show ${myInterface} | grep link/ether | awk '{print $2}')
 echo " ${myHWAddress}!"
 
-echo -n "Getting device IPAddress..."
+echo -n "0bta1n1ng dev1ce 1PAddress..."
 myIPAddress=$(ip addr show ${myInterface} | grep brd | grep global | awk '{print $2}' | cut -d '/' -f 1)
 echo " ${myIPAddress}!"
 
-echo -n "Scanning and populating arp table, please wait..."
+echo -n "Scann1ng and p0pulat1ng arp table, please wa1t..."
 for i in {1..254}; do
 	ping -c 1 -w 1 $(ip route | grep default | awk '{print $3}' | rev | cut -d '.' -f 2- | rev).${i} > /dev/null &
 done
 
 sleep 2
 
-echo " done!"
+echo " d0ne!"
 
-echo -n "Adding self to arp table..."
+echo -n "Add1ng self to arp table..."
 sudo arp -i ${myInterface} -s ${myIPAddress} ${myHWAddress}
-echo " done!"
+echo " d0ne!"
 
-echo -n "Finished, filtering arp table..."
+echo -n "F1n1shed, f1lter1ng arp table..."
 arpTable=$(sudo arp -n | grep -v incomplete | grep -v HWaddress | sort -t . -k 3,3n -k 4,4n)
-echo " done!"
+echo " d0ne!"
 
 printf %$(tput cols)s | tr ' ' '='
 
-echo -e "IPAddress\t\t\b\b\b\bHostname\tHWAddress\t\tInterface"
+echo -e "1PAddress\t\t\b\b\b\bH0stname\tHWAddress\t\t1nterface"
 oldIFS=${IFS}
 IFS=$'\n'
 for entry in ${arpTable}; do
