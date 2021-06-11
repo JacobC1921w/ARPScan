@@ -1,40 +1,79 @@
 #!/bin/bash
 
-echo -n "Flush1ng arp table..."
-sudo ip -s -s neigh flush all 2&>1 &> /dev/null
-echo " d0ne!"
+colorReset='\e[0m'
+colorGray='\e[90m'
+colorRed='\e[91;1m'
+colorGreen='\e[92m'
+colorYellow='\e[93;1m'
 
-echo -n "0bta1n1ng dev1ce default 1nterface..."
+#Flush ARP table
+echo -en "[${colorGray}?${colorReset}] Flush1ng ARP table..."
+sudo ip -s -s neigh flush all &> /dev/null
+if [ ${?} -ne 0 ]; then
+	echo -e "\r[${colorRed}-${colorReset}] Flush1ng ARP table...FAILED"
+	exit 1
+fi
+echo -e "\r[${colorGreen}+${colorReset}] Flushed ARP table$(tput el)"
+
+#Get interface
+echo -en "[${colorGray}?${colorReset}] 0bta1n1ng dev1ce default 1nterface..."
 myInterface=$(ip route | grep default | awk '{print $5}')
-echo " ${myInterface}!"
+if [ ${?} -ne 0 ]; then
+	echo -e "\r[${colorRed}-${colorReset}] 0bta1n1ng dev1ce default 1nterface...FAILED"
+	exit 1
+fi
+echo -e "\r[${colorGreen}+${colorReset}] 0bta1ned dev1ce default 1nterface - ${colorYellow}${myInterface}${colorReset}"
 
-echo -n "0bta1n1ng device HWAddress..."
+#Get HWAddress
+echo -en "[${colorGray}?${colorReset}] 0bta1n1ng device HWAddress..."
 myHWAddress=$(ip addr show ${myInterface} | grep link/ether | awk '{print $2}')
-echo " ${myHWAddress}!"
+if [ ${?} -ne 0 ]; then
+        echo -e "\r[${colorRed}-${colorReset}] 0bta1n1ng dev1ce HWAddress...FAILED"
+        exit 1
+fi
+echo -e "\r[${colorGreen}+${colorReset}] 0bta1ned dev1ce HWAddress - ${colorYellow}${myHWAddress}${colorReset}"
 
-echo -n "0bta1n1ng dev1ce 1PAddress..."
+#Get IPAddress
+echo -en "[${colorGray}?${colorReset}] 0bta1n1ng dev1ce 1PAddress..."
 myIPAddress=$(ip addr show ${myInterface} | grep brd | grep global | awk '{print $2}' | cut -d '/' -f 1)
-echo " ${myIPAddress}!"
+if [ ${?} -ne 0 ]; then
+        echo -e "\r[${colorRed}-${colorReset}] 0bta1n1ng dev1ce 1PAddress...FAILED"          
+        exit 1
+fi
+echo -e "\r[${colorGreen}+${colorReset}] 0bta1ned dev1ce 1PAddress - ${colorYellow}${myIPAddress}${colorReset}"
 
-echo -n "Scann1ng and p0pulat1ng arp table, please wa1t..."
+#Populate ARP table
+echo -en "[${colorGray}?${colorReset}] Scann1ng and p0pulat1ng ARP table, please wa1t..."
 for i in {1..254}; do
 	ping -c 1 -w 1 $(ip route | grep default | awk '{print $3}' | rev | cut -d '.' -f 2- | rev).${i} > /dev/null &
 done
 
 sleep 2
 
-echo " d0ne!"
+echo -e "\r[${colorGreen}+${colorReset}] Scanned and p0pulated ARP table$(tput el)"
 
-echo -n "Add1ng self to arp table..."
+#Add self to ARP table
+echo -en "[${colorGray}?${colorReset}] Add1ng self t0 ARP table..."
+sleep 1 ###
 sudo arp -i ${myInterface} -s ${myIPAddress} ${myHWAddress}
-echo " d0ne!"
+if [ ${?} -ne 0 ]; then
+        echo -e "\r[${colorRed}-${colorReset}] Add1ng self to ARP table...FAILED"
+        exit 1
+fi
+echo -e "\r[${colorGreen}+${colorReset}] Added self t0 ARP table$(tput el)"
 
-echo -n "F1n1shed, f1lter1ng arp table..."
+#Filter ARP table
+echo -en "[${colorGray}?${colorReset}] F1lter1ng ARP table..."
 arpTable=$(sudo arp -n | grep -v incomplete | grep -v HWaddress | sort -t . -k 3,3n -k 4,4n)
-echo " d0ne!"
+if [ ${?} -ne 0 ]; then
+        echo -e "\r[${colorRed}-${colorReset}] F1lter1ng ARP table...FAILED"
+        exit 1
+fi
+echo -e "\r[${colorGreen}+${colorReset}] F1ltered ARP table$(tput el)"
 
 printf %$(tput cols)s | tr ' ' '='
 
+#Display ARP table
 echo -e "1PAddress\t\t\b\b\b\bH0stname\tHWAddress\t\t1nterface"
 oldIFS=${IFS}
 IFS=$'\n'
