@@ -1,0 +1,48 @@
+#!/bin/bash
+
+echo -n "Flushing arp table..."
+sudo ip -s -s neigh flush all 2&>1 &> /dev/null
+echo " done!"
+
+echo -n "Getting device default interface..."
+myInterface=$(ip route | grep default | awk '{print $5}')
+echo " ${myInterface}!"
+
+echo -n "Getting device HWAddress..."
+myHWAddress=$(ip addr show ${myInterface} | grep link/ether | awk '{print $2}')
+echo " ${myHWAddress}!"
+
+echo -n "Getting device IPAddress..."
+myIPAddress=$(ip addr show ${myInterface} | grep brd | grep global | awk '{print $2}' | cut -d '/' -f 1)
+echo " ${myIPAddress}!"
+
+echo -n "Scanning and populating arp table, please wait..."
+for i in {1..254}; do
+	ping -c 1 -w 1 $(ip route | grep default | awk '{print $3}' | rev | cut -d '.' -f 2- | rev).${i} > /dev/null &
+done
+
+sleep 2
+
+echo " done!"
+
+echo -n "Adding self to arp table..."
+sudo arp -i ${myInterface} -s ${myIPAddress} ${myHWAddress}
+echo " done!"
+
+echo -n "Finished, filtering arp table..."
+arpTable=$(sudo arp -n | grep -v incomplete | grep -v HWaddress | sort -t . -k 3,3n -k 4,4n)
+echo " done!"
+
+printf %$(tput cols)s | tr ' ' '='
+
+echo -e "IPAddress\t\t\b\b\b\bHostname\tHWAddress\t\tInterface"
+oldIFS=${IFS}
+IFS=$'\n'
+for entry in ${arpTable}; do
+	IPAddress=$(echo ${entry} | awk '{print $1}' | tr -d '[:space:]')
+	hostName=$(getent hosts ${IPAddress} | awk '{print $2}' | tr -d '[:space:]' | sed 's/^/\\b\\b\\b\\b/g' | sed 's/$/ /g')
+	HWAddress=$(echo ${entry} | awk '{print $3}' | tr -d '[:space:]')
+	interface=$(echo ${entry} | awk '{print $5}' | tr -d '[:space:]')
+	echo -e "${IPAddress}\t\t${hostName}\t${HWAddress}\t${interface}"
+done
+IFS=${oldIFS}
