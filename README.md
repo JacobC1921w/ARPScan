@@ -1,4 +1,4 @@
-# Net1nf0Stealer
+# 90sHackingSuite
 
 This is a project I have started out of complete boredom. I am to bring you, the user, an experience similar to that of a 90s hacking movie, however it actually works.
 
