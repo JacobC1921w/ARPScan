@@ -48,13 +48,10 @@ for i in {1..254}; do
 	ping -c 1 -w 1 $(ip route | grep default | awk '{print $3}' | rev | cut -d '.' -f 2- | rev).${i} > /dev/null &
 done
 
-sleep 2
-
 echo -e "\r[${colorGreen}+${colorReset}] Scanned and p0pulated ARP table$(tput el)"
 
 #Add self to ARP table
 echo -en "[${colorGray}?${colorReset}] Add1ng self t0 ARP table..."
-sleep 1 ###
 sudo arp -i ${myInterface} -s ${myIPAddress} ${myHWAddress}
 if [ ${?} -ne 0 ]; then
         echo -e "\r[${colorRed}-${colorReset}] Add1ng self to ARP table...FAILED"
