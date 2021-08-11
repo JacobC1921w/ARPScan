@@ -6,6 +6,10 @@ This is a simple network mapper that uses the <b>A</b>ddress <b>R</b>esolution <
 
 <br />
 
+## USAGE:
+
+<br />
+
 #### FUN FACT
 If you were wondering why I made this tool, the answer is simple! <i>I couldn't get `netdiscover` to work!</i> Yes, thats right, it just wouldnt work. `nmap` (in my opinion) is too slow for a simple host scan, so I thought <b><i>HEY!</i></b> why not make my own.
 
