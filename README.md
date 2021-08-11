@@ -1,13 +1,14 @@
-# 90sHackingSuite
+# ARPScan
+...<i>by Jacob Collins</i>
 
-This is a project I have started out of complete boredom. I am to bring you, the user, an experience similar to that of a 90s hacking movie, however it actually works.
+<br />
+<i>Now introducing:</i> <b>ARPScan</b>
+This is a simple network mapper that uses the <b>A</b>ddress <b>R</b>esolution <b>P</b>rotocol to map out a network with a series of requests. This tool will provide you with a list of devices that return an ARP request, as well as their hardware addressed for your viewing pleasures...
 
-I will be making my own tools, and uploading them to this account, for your personal enjoyment.
+<br />
+### FUN FACT
+If you were wondering why I made this tool, the answer is simple! <i>I couldn't get `netdiscover` to work!</i> Yes, thats right, it just wouldnt work. `nmap` (in my opinion) is too slow for a simple host scan, so I thought <b><i>HEY!</i></b> why not make my own.
 
-I start you off with:
-## Net1nf0Stealer (information gathering)
-
-This is a simple information gathering tool used for scanning the network for online IP addresses, and their respective hostnames (if applicable)/hardware addreses. It basically mimics netdiscover, but it isn't working for me on the latest AUR package, so I decided to skip `nmap` and make my own.
-
-### <b>WARNING:</b>
-This tool is <i>very</i> noisy, and can be seen very easily. I'm trying to research whether there is a way to ping every single host on the subnet stealthily, but so far, to no prevail.
+<br />
+## <b>WARNING:</b>
+This tool is <i>very</i> noisy network wise, and can be seen and detected very easily. Infact, I dare you to run wireshark when you use this program, and see how it looks for yourself. I'm trying to figure out if there's a way to do this more subtly, but so far, to no prevail.

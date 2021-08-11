@@ -6,72 +6,72 @@ colorRed='\e[91;1m'
 colorGreen='\e[92m'
 colorYellow='\e[93;1m'
 
-#Flush ARP table
-echo -en "[${colorGray}?${colorReset}] Flush1ng ARP table..."
+# Flush ARP table before commencing scan
+echo -en "[${colorGray}?${colorReset}] Flushing ARP table...\r"
 sudo ip -s -s neigh flush all &> /dev/null
 if [ ${?} -ne 0 ]; then
-	echo -e "\r[${colorRed}-${colorReset}] Flush1ng ARP table...FAILED"
+	echo -e "[${colorRed}-${colorReset}] Flushing ARP table...FAILED$(tput el)"
 	exit 1
 fi
-echo -e "\r[${colorGreen}+${colorReset}] Flushed ARP table$(tput el)"
+echo -e "[${colorGreen}+${colorReset}] Flushed ARP table$(tput el)"
 
-#Get interface
-echo -en "[${colorGray}?${colorReset}] 0bta1n1ng dev1ce default 1nterface..."
+# Get default network interface card
+echo -en "[${colorGray}?${colorReset}] Obtaining device default interface...\r"
 myInterface=$(ip route | grep default | awk '{print $5}')
 if [ ${?} -ne 0 ]; then
-	echo -e "\r[${colorRed}-${colorReset}] 0bta1n1ng dev1ce default 1nterface...FAILED"
+	echo -e "[${colorRed}-${colorReset}] Obtaining device default interface...FAILED$(tput el)"
 	exit 1
 fi
-echo -e "\r[${colorGreen}+${colorReset}] 0bta1ned dev1ce default 1nterface - ${colorYellow}${myInterface}${colorReset}"
+echo -e "[${colorGreen}+${colorReset}] Obtained device default interface - ${colorYellow}${myInterface}${colorReset}$(tput el)"
 
-#Get HWAddress
-echo -en "[${colorGray}?${colorReset}] 0bta1n1ng device HWAddress..."
+# Get hardware address for default network interface card
+echo -en "[${colorGray}?${colorReset}] Obtaining device hardware address...\r"
 myHWAddress=$(ip addr show ${myInterface} | grep link/ether | awk '{print $2}')
 if [ ${?} -ne 0 ]; then
-        echo -e "\r[${colorRed}-${colorReset}] 0bta1n1ng dev1ce HWAddress...FAILED"
+	echo -e "[${colorRed}-${colorReset}] Obtaining device hardware address...FAILED$(tput el)"
         exit 1
 fi
-echo -e "\r[${colorGreen}+${colorReset}] 0bta1ned dev1ce HWAddress - ${colorYellow}${myHWAddress}${colorReset}"
+echo -e "[${colorGreen}+${colorReset}] Obtained device hardware address - ${colorYellow}${myHWAddress}${colorReset}$(tput el)"
 
-#Get IPAddress
-echo -en "[${colorGray}?${colorReset}] 0bta1n1ng dev1ce 1PAddress..."
+# Get network interface card IP address
+echo -en "[${colorGray}?${colorReset}] Obtaining device IP address...\r"
 myIPAddress=$(ip addr show ${myInterface} | grep brd | grep global | awk '{print $2}' | cut -d '/' -f 1)
 if [ ${?} -ne 0 ]; then
-        echo -e "\r[${colorRed}-${colorReset}] 0bta1n1ng dev1ce 1PAddress...FAILED"          
+	echo -e "[${colorRed}-${colorReset}] Obtaining device IP address...FAILED$(tput el)"
         exit 1
 fi
-echo -e "\r[${colorGreen}+${colorReset}] 0bta1ned dev1ce 1PAddress - ${colorYellow}${myIPAddress}${colorReset}"
+echo -e "[${colorGreen}+${colorReset}] Obtained device IP address - ${colorYellow}${myIPAddress}${colorReset}$(tput el)"
 
-#Populate ARP table
-echo -en "[${colorGray}?${colorReset}] Scann1ng and p0pulat1ng ARP table, please wa1t..."
+# Ping hosts and re-populate ARP table
+echo -en "[${colorGray}?${colorReset}] Scanning and populating ARP table, please wait...\r"
 for i in {1..254}; do
 	ping -c 1 -w 1 $(ip route | grep default | awk '{print $3}' | rev | cut -d '.' -f 2- | rev).${i} > /dev/null &
 done
 
-echo -e "\r[${colorGreen}+${colorReset}] Scanned and p0pulated ARP table$(tput el)"
+echo -e "[${colorGreen}+${colorReset}] Scanned and populated ARP table$(tput el)"
 
-#Add self to ARP table
-echo -en "[${colorGray}?${colorReset}] Add1ng self t0 ARP table..."
+# Add self to ARP table
+echo -en "[${colorGray}?${colorReset}] Adding self to ARP table...\r"
 sudo arp -i ${myInterface} -s ${myIPAddress} ${myHWAddress}
 if [ ${?} -ne 0 ]; then
-        echo -e "\r[${colorRed}-${colorReset}] Add1ng self to ARP table...FAILED"
+	echo -e "[${colorRed}-${colorReset}] Adding self to ARP table...FAILED$(tput el)"
         exit 1
 fi
-echo -e "\r[${colorGreen}+${colorReset}] Added self t0 ARP table$(tput el)"
+echo -e "[${colorGreen}+${colorReset}] Added self to ARP table$(tput el)"
 
-#Filter ARP table
-echo -en "[${colorGray}?${colorReset}] F1lter1ng ARP table..."
+# Filter ARP table for use later
+echo -en "[${colorGray}?${colorReset}] Filtering ARP table...\r"
 arpTable=$(sudo arp -n | grep -v incomplete | grep -v HWaddress | sort -t . -k 3,3n -k 4,4n)
 if [ ${?} -ne 0 ]; then
-        echo -e "\r[${colorRed}-${colorReset}] F1lter1ng ARP table...FAILED"
+	echo -e "[${colorRed}-${colorReset}] Filtering ARP table...FAILED$(tput el)"
         exit 1
 fi
-echo -e "\r[${colorGreen}+${colorReset}] F1ltered ARP table$(tput el)"
+echo -e "[${colorGreen}+${colorReset}] Filtered ARP table$(tput el)"
 
 printf %$(tput cols)s | tr ' ' '='
 
-#Display ARP table
-echo -e "1PAddress\t\t\b\b\b\bH0stname\tHWAddress\t\t1nterface"
+# Display ARP table to screen
+echo -e "IPAddress\t\t\b\b\b\bHostname\tHWAddress\t\tInterface"
 oldIFS=${IFS}
 IFS=$'\n'
 for entry in ${arpTable}; do
