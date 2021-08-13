@@ -6,6 +6,9 @@ colorRed='\e[91;1m'
 colorGreen='\e[92m'
 colorYellow='\e[93;1m'
 
+# Parse command line arguments
+echo -en "[${colorGray}?${colorReset}] Parsing command line arguments...\r"
+
 # Flush ARP table before commencing scan
 echo -en "[${colorGray}?${colorReset}] Flushing ARP table...\r"
 sudo ip -s -s neigh flush all &> /dev/null
